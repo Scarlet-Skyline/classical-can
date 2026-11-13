@@ -1,5 +1,7 @@
 实现classical-CAN与主机的双向桥接
 
+修改了：protocol.rs (定义数据格式和转换规则,定义如 struct CanFrame 或 struct UsbPacket，并包含将 CAN 数据“打包”成 USB 格式，或者将 USB 数据“解包”成 CAN 格式的函数。负责处理帧 ID、数据长度（DLC）等细节) , main.rs(程序入口，实现双向桥接逻辑：启动一个循环或异步任务。一方面监听 CAN 总线，一旦有数据就打包通过 USB 发给主机（DMTool）；另一方面监听 USB，一旦主机发来指令，就解析并转换成 CAN 帧发到总线上。控制着数据流向。), Cargo.toml (加上用于异步处理的 embassy 框架)
+
 1. 数据路径
 CAN 数据到达主机（接收）：
 外部 CAN 节点（如达妙电机或 DMTool 模拟发送）向总线发送帧 -> MCU 的 FDCAN1 硬件通过 RX 引脚（PD0）接收 -> 触发中断 -> can_rx_task 被唤醒读取帧 -> 将 Frame 数据推入容量为 8 的 CAN_RX_CHANNEL（通道队列）-> control_port 任务监听到队列有数据，取出并格式化为 RX <ID> <Data>\n 文本 -> 通过 USB CDC 虚拟串口（Control Port）发送给电脑主机。
