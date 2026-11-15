@@ -26,9 +26,28 @@ CAN 数据到达主机（接收）：
 
 测试链路配合：将 DMTool 波特率设为 1Mbps，串口助手连接 Control Port（波特率任意，此处为 921600），在 DMTool can界面发 11 22 33 44 （数据长度为4字节，没超过8字节） ，帧类型：数据帧，帧格式：标准帧，发送后显示 “发送成功”。
 
-$\color{red}{\text{rrrrr}}$
+$\color{red}{\text{
+注意：这部分结合了本次测试的实际情况，对硬件测试做出详细说明，
+    重点包括了双向验收的不同信号传输渠道/需注意的硬件连接方式/预期测试结果等
+    测试使用DMTool USB-CAN分析仪及其上位机软件
+}}$
+$\color{green}{\text{
+1. 主机USB接DMTool USB接口，DMTool的输出有CAN总线和UART（USART）两种信号，想双向测试都得接上。UART 接 MCU UART，CAN 接 MCU CAN。
+   接上了CAN信号渠道，通过DMTool发出的CAN总线信号才能被 MCU CAN底层硬件所接受，通过MCU芯片处理，生成 RX <ID> <Hex数据>\n 信号发给
+   主机，但是只有连上了MCU和DMTool的UART信号渠道才能在界面读到这条消息。
+2. 主机--->MCU
+   调到DMTool的“串口”界面，下方白框区域发送CAN TX <11位Hex ID> <Hex数据>\n，那如何查看呢？下一步调到 “CAN” 界面进行查看，会显示从
+   主机发来的消息
+3. MCU--->主机
+   这一步不用那么繁琐的输入 “CAN TX XXXXXXXX”等内容，直接调到"CAN"界面，下方有专门的DLC/数据内容/帧ID设置。设置好后点击“发送”，
+   会显示“发送成功”。此时表示波特率配置/接口选择等硬件测试环节没问题，MCU CAN硬件部分已接受这个信号。如果MCU软件没问题，调回“串口”
+   界面，会看到程序中设计好的 RX <ID> <Hex数据>\n
+4. DMTool和MCU之间两种信号的传输的切换由上位机软件中的不同接口、波特率决定，使用时不仅仅是切换窗口就行了，还要注意切换接口和波特率。
+   如果USB-CAN分析仪没有UART信号接口，则要用USB-TTL线连接MCU UART和主机，并且下载串口助手，进行测试指令 “CAN TX <11位Hex ID>
+   <Hex数据>\n” 的输入和CAN总线的监听。但是分析仪一般是两种信号都有的。
+}}$   
 
-3. 并发与缓冲
+6. 并发与缓冲
 任务分工：基于 Embassy 异步运行时，通过 join/join4 并发调度 6 个任务：device.run（USB底层）、control_port（命令解析与收发）、uart_port（UART1透传）、dap.run（调试接口）、can_rx_task（CAN接收）、can_tx_task（CAN发送）。
 
 队列容量：使用 embassy_sync::channel::Channel 提供有界缓冲。接收通道 CAN_RX_CHANNEL 容量为 8；发送通道 CAN_TX_CHANNEL 容量为 4。
