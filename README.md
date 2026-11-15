@@ -26,6 +26,8 @@ CAN 数据到达主机（接收）：
 
 测试链路配合：将 DMTool 波特率设为 1Mbps，串口助手连接 Control Port（波特率任意，此处为 921600），在 DMTool can界面发 11 22 33 44 （数据长度为4字节，没超过8字节） ，帧类型：数据帧，帧格式：标准帧，发送后显示 “发送成功”。
 
+$\color{red}{\text{rrrrr}}$
+
 3. 并发与缓冲
 任务分工：基于 Embassy 异步运行时，通过 join/join4 并发调度 6 个任务：device.run（USB底层）、control_port（命令解析与收发）、uart_port（UART1透传）、dap.run（调试接口）、can_rx_task（CAN接收）、can_tx_task（CAN发送）。
 
