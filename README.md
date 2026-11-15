@@ -31,7 +31,8 @@ $\color{red}{\text{
     重点包括了双向验收的不同信号传输渠道/需注意的硬件连接方式/预期测试结果等
     测试使用DMTool USB-CAN分析仪及其上位机软件
 }}$
-$\color{green}{\text{
+
+$\color{red}{\text{
 1. 主机USB接DMTool USB接口，DMTool的输出有CAN总线和UART（USART）两种信号，想双向测试都得接上。UART 接 MCU UART，CAN 接 MCU CAN。
    接上了CAN信号渠道，通过DMTool发出的CAN总线信号才能被 MCU CAN底层硬件所接受，通过MCU芯片处理，生成 RX <ID> <Hex数据>\n 信号发给
    主机，但是只有连上了MCU和DMTool的UART信号渠道才能在界面读到这条消息。
